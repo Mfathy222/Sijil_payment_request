@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_Sijil_payment_request_wizard_form" model="ir.ui.view">
+        <field name="name">sale.payment.request.wizard.form</field>
+        <field name="model">sale.payment.request.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Payment Request">
+                <group>
+                    <field name="sale_order_id"/>
+                    <field name="partner_id"/>
+                </group>
+
+                <separator string="Select Products"/>
+
+                <field name="line_ids" nolabel="1">
+                    <list create="false" delete="false" editable="bottom">
+                        <field name="quotation_product_display_name" readonly="1"/>
+                        <field name="product_id" column_invisible="True"/>
+                        <field name="quotation_qty" digits="[16, 3]"/>
+                        <field name="already_requested_qty" digits="[16, 3]"/>
+                        <field name="remaining_qty" digits="[16, 3]"/>
+                        <field name="product_uom_qty" readonly="0" digits="[16, 3]"/>
+                        <field name="payment_percentage" readonly="0"/>
+                        <field name="payment_untaxed_amount" string="Total Before Tax" widget="monetary"/>
+                        <field name="price_total" widget="monetary"/>
+                        <field name="payment_amount" widget="monetary"/>
+                        <field name="currency_id" column_invisible="True"/>
+                        <button name="action_remove_line"
+                                string="Remove"
+                                type="object"
+                                icon="fa-trash"
+                                class="btn-link text-danger"/>
+                    </list>
+                </field>
+
+                <footer>
+                    <button name="action_confirm"
+                            string="Confirm"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            special="cancel"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

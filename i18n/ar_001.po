@@ -1,0 +1,246 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * Sijil_payment_request
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-08 00:00+0000\n"
+"PO-Revision-Date: 2026-09-08 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"Language: ar_001\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_form
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_wizard_form
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__payment_request_id
+msgid "Payment Request"
+msgstr "طلب دفع"
+
+#. module: Sijil_payment_request
+#: model:ir.actions.act_window,name:Sijil_payment_request.action_Sijil_payment_request
+#: model:ir.ui.menu,name:Sijil_payment_request.menu_Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_order__payment_request_ids
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_list
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_sale_order_form_inherit_payment_request
+msgid "Payment Requests"
+msgstr "طلبات الدفع"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__name
+msgid "Reference"
+msgstr "المرجع"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__partner_id
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard__partner_id
+msgid "Customer"
+msgstr "العميل"
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_form
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_list
+msgid "Creation Date"
+msgstr "تاريخ الإنشاء"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__status
+msgid "Status"
+msgstr "الحالة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__user_id
+msgid "User"
+msgstr "المستخدم"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields.selection,name:Sijil_payment_request.selection__sale_payment_request__status__unpaid
+#: model:ir.model.fields.selection,name:Sijil_payment_request.selection__sale_payment_request_line__payment_status__unpaid
+msgid "Not Paid"
+msgstr "لم يدفع"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields.selection,name:Sijil_payment_request.selection__sale_payment_request__status__partial
+#: model:ir.model.fields.selection,name:Sijil_payment_request.selection__sale_payment_request_line__payment_status__partial
+msgid "Partially Paid"
+msgstr "دفع جزئي"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields.selection,name:Sijil_payment_request.selection__sale_payment_request__status__paid
+#: model:ir.model.fields.selection,name:Sijil_payment_request.selection__sale_payment_request_line__payment_status__paid
+msgid "Paid"
+msgstr "تم الدفع"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__product_id
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard_line__product_id
+msgid "Product"
+msgstr "المنتج"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__product_uom_qty
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard_line__product_uom_qty
+msgid "Quantity"
+msgstr "الكمية"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__price_unit
+msgid "Unit Price"
+msgstr "سعر الوحدة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__base_amount
+msgid "Line Total (Incl. Tax)"
+msgstr "إجمالي السطر شامل الضريبة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__payment_status
+msgid "Payment Status"
+msgstr "حالة الدفع"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__payment_percentage
+msgid "Payment %"
+msgstr "نسبة الدفعة %"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__payment_amount
+msgid "Payment Amount"
+msgstr "مبلغ الدفعة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__total_request_amount
+msgid "Requested Amount"
+msgstr "إجمالي المبلغ المطلوب"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__sale_order_id
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard__sale_order_id
+msgid "Quotation / Sales Order"
+msgstr "الكوتيشن / أمر البيع"
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_wizard_form
+msgid "Remove"
+msgstr "مسح"
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_wizard_form
+msgid "Confirm"
+msgstr "تأكيد"
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_wizard_form
+msgid "Cancel"
+msgstr "إلغاء"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard_line__price_total
+msgid "Total (Incl. Tax)"
+msgstr "الإجمالي شامل الضريبة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__line_ids
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard__line_ids
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_form
+msgid "Products"
+msgstr "المنتجات"
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_wizard_form
+msgid "Select Products"
+msgstr "اختر المنتجات"
+
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__due_date
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_line__due_date
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_search
+msgid "Due Date"
+msgstr "تاريخ الاستحقاق"
+
+
+#. module: Sijil_payment_request
+#, python-format
+msgid ""
+"Payment Requests for product \"%(product)s\" cannot exceed 100%% of the "
+"quotation line total including tax and quantity.\n"
+"Already requested: %(already).2f%%\n"
+"Remaining available: %(remaining).2f%%"
+msgstr ""
+"لا يمكن أن تتجاوز طلبات الدفع للمنتج \"%(product)s\" نسبة 100%% من إجمالي "
+"سطر الكوتيشن شامل الضريبة والكمية.\n"
+"النسبة المطلوبة سابقاً: %(already).2f%%\n"
+"النسبة المتاحة: %(remaining).2f%%"
+
+#. module: Sijil_payment_request
+#, python-format
+msgid ""
+"A new Payment Request cannot be created for the following product(s) because "
+"100%% of their quotation line total including tax and quantity has already "
+"been requested:\n"
+"%(products)s"
+msgstr ""
+"لا يمكن إنشاء طلب دفع جديد للمنتجات التالية لأنه تم بالفعل طلب 100%% من "
+"إجمالي سطر الكوتيشن الخاص بها شامل الضريبة والكمية:\n"
+"%(products)s"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__quotation_request_number
+msgid "Quotation Payment No."
+msgstr "رقم الدفعة في الكوتيشن"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__quotation_request_number
+msgid "Payment No."
+msgstr "رقم الدفعة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard_line__quotation_qty
+msgid "Quotation Qty"
+msgstr "كمية الكوتيشن"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard_line__already_requested_qty
+msgid "Already Requested"
+msgstr "الكمية المطلوبة سابقاً"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request_wizard_line__remaining_qty
+msgid "Remaining Qty"
+msgstr "الكمية المتبقية"
+
+#. module: Sijil_payment_request
+#, python-format
+msgid "Quantity for product \"%(product)s\" exceeds the remaining quotation quantity.\nQuotation quantity: %(quotation)s\nAlready requested: %(requested)s\nRemaining quantity: %(remaining)s"
+msgstr "كمية المنتج \"%(product)s\" تتجاوز الكمية المتبقية في الكوتيشن.\nكمية الكوتيشن: %(quotation)s\nالكمية المطلوبة سابقاً: %(requested)s\nالكمية المتبقية: %(remaining)s"
+
+#. module: Sijil_payment_request
+#, python-format
+msgid "Payment Request quantity for product \"%(product)s\" exceeds the quotation quantity.\nQuotation quantity: %(quotation)s\nAlready requested: %(requested)s\nRemaining quantity: %(remaining)s"
+msgstr "كمية طلب الدفع للمنتج \"%(product)s\" تتجاوز كمية الكوتيشن.\nكمية الكوتيشن: %(quotation)s\nالكمية المطلوبة سابقاً: %(requested)s\nالكمية المتبقية: %(remaining)s"
+
+#. module: Sijil_payment_request
+msgid "All product quantities in this quotation have already been allocated to Payment Requests."
+msgstr "تم بالفعل توزيع كامل كميات المنتجات في هذا الكوتيشن على طلبات الدفع."
+
+#. module: Sijil_payment_request
+#: model_terms:ir.ui.view,arch_db:Sijil_payment_request.view_Sijil_payment_request_form
+msgid "Print Payment Request"
+msgstr "طباعة طلب السداد"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__report_untaxed_amount
+msgid "Payment Value"
+msgstr "قيمة الدفعة قبل الضريبة"
+
+#. module: Sijil_payment_request
+#: model:ir.model.fields,field_description:Sijil_payment_request.field_sale_payment_request__report_tax_amount
+msgid "Payment VAT"
+msgstr "ضريبة الدفعة"

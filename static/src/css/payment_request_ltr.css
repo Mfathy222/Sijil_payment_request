@@ -1,0 +1,42 @@
+/* Payment Request numeric batch/payment number:
+   force left alignment and LTR without invalid inline XML style attributes. */
+
+.o_list_view .sijil-pr-ltr-number,
+.o_list_number_th .sijil-pr-ltr-number,
+.o_list_view .o_data_cell.sijil-pr-ltr-number,
+.o_list_view .o_list_number.sijil-pr-ltr-number {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+.o_list_view th.sijil-pr-ltr-number,
+.o_list_view .sijil-pr-ltr-number .o_column_title {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+.o_form_view .sijil-pr-ltr-number,
+.o_form_view .sijil-pr-ltr-number input,
+.o_form_view .sijil-pr-ltr-number .o_field_widget {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+.o_list_renderer .o_list_table thead .o_list_number_th {
+    text-align: left !important;
+}
+
+
+
+.o_list_renderer .sijil-pr-ltr-number,
+.o_list_table thead .sijil-pr-ltr-number,
+.o_list_number_th .sijil-pr-ltr-number
+{
+    text-align: left !important;
+}
+
+.modal-content {
+
+    width: 1120px !important;
+    
+}

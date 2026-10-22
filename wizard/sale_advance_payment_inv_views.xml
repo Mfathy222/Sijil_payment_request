@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_advance_payment_inv_payment_request" model="ir.ui.view">
+        <field name="name">sale.advance.payment.inv.payment.request</field>
+        <field name="model">sale.advance.payment.inv</field>
+        <field name="inherit_id" ref="sale.view_sale_advance_payment_inv"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//group[@name='down_payment_specification']" position="attributes">
+                <attribute name="invisible">
+                    advance_payment_method not in ('fixed', 'percentage', 'payment_request')
+                </attribute>
+            </xpath>
+
+            <xpath expr="//label[@for='amount']" position="after">
+                <label for="payment_request_ids"
+                       groups="Sijil_payment_request.group_payment_request_user,Sijil_payment_request.group_payment_request_supervisor"
+                       invisible="advance_payment_method != 'payment_request'"/>
+            </xpath>
+
+            <xpath expr="//div[@id='payment_method_details']" position="inside">
+                <field name="payment_request_ids"
+                       widget="many2many_tags"
+                       groups="Sijil_payment_request.group_payment_request_user,Sijil_payment_request.group_payment_request_supervisor"
+                       invisible="advance_payment_method != 'payment_request'"
+                       required="advance_payment_method == 'payment_request'"
+                       class="oe_inline"
+                       options="{'no_create': True, 'no_open': True}"
+                       domain="[('sale_order_id', 'in', sale_order_ids)]"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

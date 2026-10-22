@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_payment_request_print_wizard_form" model="ir.ui.view">
+        <field name="name">sale.payment.request.print.wizard.form</field>
+        <field name="model">sale.payment.request.print.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Print Payment Requests">
+                <group>
+                    <field name="request_count" readonly="1"/>
+                    <field name="company_id" readonly="1"/>
+                    <field name="request_ids" invisible="1"/>
+                    <field name="snb_visible" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_print_snb"
+                            type="object"
+                            string="Print SNB"
+                            icon="fa-print"
+                            class="btn-primary"
+                            invisible="not snb_visible"/>
+                    <button name="action_print_alinma"
+                            type="object"
+                            string="Print Alinma"
+                            icon="fa-print"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            special="cancel"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

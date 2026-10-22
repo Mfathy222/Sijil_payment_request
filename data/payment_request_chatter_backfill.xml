@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Runs on module install/upgrade.
+        Existing Payment Requests with no visible Chatter comment receive
+        one creation note. The Python method is idempotent.
+    -->
+    <function model="sale.payment.request" name="_backfill_visible_chatter"/>
+</odoo>

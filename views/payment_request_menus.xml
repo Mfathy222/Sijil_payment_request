@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_server_payment_requests_active_company" model="ir.actions.server">
+        <field name="name">Payment Requests</field>
+        <field name="model_id" ref="model_sale_payment_request"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+action = env.ref(
+    'Sijil_payment_request.action_Sijil_payment_request'
+).sudo().read()[0]
+action['domain'] = [('company_id', '=', env.company.id)]
+        ]]></field>
+    </record>
+
+    <menuitem id="menu_Sijil_payment_request"
+              name="Payment Requests"
+              parent="sale.sale_menu_root"
+              action="action_server_payment_requests_active_company"
+              sequence="45"
+              groups="Sijil_payment_request.group_payment_request_user,Sijil_payment_request.group_payment_request_supervisor,Sijil_payment_request.group_payment_request_reader"/>
+</odoo>

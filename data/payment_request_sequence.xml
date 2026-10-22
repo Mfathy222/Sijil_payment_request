@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_Sijil_payment_request" model="ir.sequence">
+        <field name="name">Sale Payment Request</field>
+        <field name="code">sale.payment.request</field>
+        <field name="prefix">PR/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

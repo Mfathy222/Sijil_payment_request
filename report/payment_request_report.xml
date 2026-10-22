@@ -1,0 +1,1286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Keep the same reliable Base64 attachment technique used by the
+         existing financial-offer reports in this database. -->
+    <record id="payment_request_background_attachment" model="ir.attachment">
+        <field name="name">Payment Request Background</field>
+        <field name="type">binary</field>
+        <field name="mimetype">image/png</field>
+        <field name="datas" type="base64" file="Sijil_payment_request/static/img/pr-back.png"/>
+        <field name="public" eval="True"/>
+    </record>
+
+    <record id="payment_request_logo_attachment" model="ir.attachment">
+        <field name="name">Payment Request Logo</field>
+        <field name="type">binary</field>
+        <field name="mimetype">image/png</field>
+        <field name="datas" type="base64" file="Sijil_payment_request/static/img/pr-logo.png"/>
+        <field name="public" eval="True"/>
+    </record>
+
+    <record id="payment_request_bank_logo_attachment" model="ir.attachment">
+        <field name="name">SNB Bank Logo</field>
+        <field name="type">binary</field>
+        <field name="mimetype">image/png</field>
+        <field name="datas" type="base64" file="Sijil_payment_request/static/img/bn-logo.png"/>
+        <field name="public" eval="True"/>
+    </record>
+
+    <record id="payment_request_alinma_logo_attachment" model="ir.attachment">
+        <field name="name">Alinma Bank Logo</field>
+        <field name="type">binary</field>
+        <field name="mimetype">image/png</field>
+        <field name="datas" type="base64" file="Sijil_payment_request/static/img/bn-el-logo.png"/>
+        <field name="public" eval="True"/>
+    </record>
+
+    <!-- Full-bleed A4. Each physical page is built explicitly below, so there
+         is no wkhtmltopdf extracted header/footer scaling issue. -->
+    <record id="paperformat_payment_request" model="report.paperformat">
+        <field name="name">Sijil Payment Request A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="disable_shrinking" eval="True"/>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_payment_request" model="ir.actions.report">
+        <field name="name">Payment Request</field>
+        <field name="model">sale.payment.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">Sijil_payment_request.report_payment_request_document</field>
+        <field name="report_file">Sijil_payment_request.report_payment_request_document</field>
+        <field name="paperformat_id" ref="paperformat_payment_request"/>
+        <field name="binding_model_id" eval="False"/>
+        <field name="print_report_name">('Payment Request _ Batch %s _ %s' % (object.quotation_request_number or '', object.partner_id.name or '')) if ((object.partner_id.lang or '').lower().startswith('en')) else ('طلب سداد _ الدفعة %s _ %s' % (object.quotation_request_number or '', object.partner_id.name or ''))</field>
+    </record>
+
+    <template id="report_payment_request_document" name="Sijil Payment Request">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="company" t-value="doc.company_id"/>
+                <t t-set="report_lang" t-value="doc.partner_id.lang or env.lang or 'ar_001'"/>
+                <t t-set="is_english" t-value="report_lang.lower().startswith('en')"/>
+                <t t-set="report_dir" t-value="'ltr' if is_english else 'rtl'"/>
+                <t t-set="is_bookkeeping" t-value="doc.env.context.get('payment_request_print_type') == 'bookkeeping'"/>
+                <t t-set="bank_iban" t-value="'SA0305000068205642065000' if is_bookkeeping else 'SA6310000023900000276709'"/>
+                <t t-set="bank_name_ar" t-value="'بنك الإنماء' if is_bookkeeping else 'البنك الأهلي السعودي'"/>
+                <t t-set="bank_name_en" t-value="'Alinma Bank' if is_bookkeeping else 'Saudi National Bank (SNB)'"/>
+                <t t-set="o" t-value="doc.with_context(lang=report_lang)"/>
+
+                <t t-set="pr_back_att" t-value="env.ref('Sijil_payment_request.payment_request_background_attachment').sudo()"/>
+                <t t-set="pr_back_b64" t-value="(pr_back_att.datas or b'').decode().replace('\n','').replace('\r','')"/>
+                <t t-set="pr_back_mime" t-value="pr_back_att.mimetype or 'image/png'"/>
+
+                <t t-set="pr_logo_att" t-value="env.ref('Sijil_payment_request.payment_request_logo_attachment').sudo()"/>
+                <t t-set="pr_logo_b64" t-value="(pr_logo_att.datas or b'').decode().replace('\n','').replace('\r','')"/>
+                <t t-set="pr_logo_mime" t-value="pr_logo_att.mimetype or 'image/png'"/>
+
+                <t t-set="bn_logo_att" t-value="env.ref('Sijil_payment_request.payment_request_bank_logo_attachment').sudo()"/>
+                <t t-set="bn_logo_b64" t-value="(bn_logo_att.datas or b'').decode().replace('\n','').replace('\r','')"/>
+                <t t-set="bn_logo_mime" t-value="bn_logo_att.mimetype or 'image/png'"/>
+
+                <t t-set="bn_el_logo_att" t-value="env.ref('Sijil_payment_request.payment_request_alinma_logo_attachment').sudo()"/>
+                <t t-set="bn_el_logo_b64" t-value="(bn_el_logo_att.datas or b'').decode().replace('\n','').replace('\r','')"/>
+                <t t-set="bn_el_logo_mime" t-value="bn_el_logo_att.mimetype or 'image/png'"/>
+                <t t-set="report_lines" t-value="o.line_ids"/>
+                <!-- Smart pagination only. Row heights remain fixed. -->
+                <t t-set="nonfinal_capacity" t-value="8"/>
+                <t t-set="last_page_capacity" t-value="5"/>
+                <t t-set="line_count" t-value="len(report_lines)"/>
+                <t t-set="remaining_before_final" t-value="max(line_count - last_page_capacity, 0)"/>
+                <t t-set="nonfinal_page_count"
+                   t-value="((remaining_before_final + nonfinal_capacity - 1) // nonfinal_capacity) if remaining_before_final else 0"/>
+                <t t-set="page_count" t-value="nonfinal_page_count + 1"/>
+
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/arabic-webfonts@1.5.0/ge-ss-two/stylesheet.css"/>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@emran-alhaddad/saudi-riyal-font/index.css"/>
+
+                <t t-call="web.basic_layout">
+                    <style type="text/css">
+                        @font-face {
+                            font-family: "GE SS Two";
+                            src:
+                                url("https://cdn.jsdelivr.net/npm/arabic-webfonts@1.5.0/ge-ss-two/GESSTwoMedium-Medium.woff") format("woff"),
+                                url("https://cdn.jsdelivr.net/npm/arabic-webfonts@1.5.0/ge-ss-two/GESSTwoMedium-Medium.ttf") format("truetype");
+                            font-weight: normal;
+                            font-style: normal;
+                        }
+
+                        @font-face {
+                            font-family: "GE SS Two";
+                            src:
+                                url("https://cdn.jsdelivr.net/npm/arabic-webfonts@1.5.0/ge-ss-two/GESSTwoBold-Bold.woff") format("woff"),
+                                url("https://cdn.jsdelivr.net/npm/arabic-webfonts@1.5.0/ge-ss-two/GESSTwoBold-Bold.ttf") format("truetype");
+                            font-weight: bold;
+                            font-style: normal;
+                        }
+
+                        html, body, main {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            width: 100% !important;
+                            font-family: "GE SS Two", Tahoma, Arial, sans-serif !important;
+                            color: #202936;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+
+                        .page.sijil-pr-sheet {
+                            position: relative !important;
+                            width: 210mm !important;
+                            height: 297mm !important;
+                            min-height: 297mm !important;
+                            max-height: 297mm !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            box-sizing: border-box !important;
+                            overflow: hidden !important;
+                            page-break-after: always !important;
+                            break-after: page !important;
+                            background: #ffffff;
+                        }
+
+                        .page.sijil-pr-sheet.sijil-pr-last-page {
+                            page-break-after: auto !important;
+                            break-after: auto !important;
+                        }
+
+                        /* Full-page supplied artwork. */
+                        .sijil-pr-bg {
+                            position: absolute;
+                            z-index: 0;
+                            top: 0;
+                            left: 0;
+                            width: 210mm !important;
+                            height: 297mm !important;
+                            object-fit: fill;
+                        }
+
+                        /* ==================================================
+                           HEADER — repeated inside every explicit A4 page
+                           ================================================== */
+                        .sijil-pr-topbar {
+                            position: absolute;
+                            z-index: 2;
+                            top: 0;
+                            left: 0;
+                            width: 210mm;
+                            height: 3.7mm;
+                            background: #135d9f;
+                        }
+
+                        .sijil-pr-logo {
+                            position: absolute;
+                            z-index: 3;
+                            top: 6.5mm;
+                            left: 46%;
+                            width: 45mm;
+                            max-height: 33mm;
+                            margin-left: -15.5mm;
+                            object-fit: contain;
+                        }
+
+                        .sijil-pr-header-line {
+                            position: absolute;
+                            z-index: 2;
+                            top: 42.6mm;
+                            left: 27.5mm;
+                            width: 155mm;
+                            border-top: 0.35mm solid #135d9f;
+                        }
+
+                        .sijil-pr-title {
+                            position: absolute;
+                            z-index: 3;
+                            top: 54mm;
+                            left: 35mm;
+                            width: 140mm;
+                            color: #135d9f;
+                            text-align: center;
+                            line-height: 1.02;
+                        }
+
+                        .sijil-pr-title-ar {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            font-size: 25pt;
+                        }
+
+                        .sijil-pr-title-en {
+                            direction: ltr;
+                            font-family: "GE SS Two", Arial, sans-serif !important;
+                            font-size: 25pt;
+                            margin-top: 1.4mm;
+                        }
+
+                        .sijil-pr-arm-left,
+                        .sijil-pr-arm-right {
+                            position: absolute;
+                            z-index: 2;
+                            top: 58.5mm;
+                            width: 28mm;
+                            height: 7.5mm;
+                            background: #135d9f;
+                        }
+
+                        .sijil-pr-arm-left {
+                            left: 0;
+                            border-top-right-radius: 4mm;
+                            border-bottom-right-radius: 4mm;
+                        }
+
+                        .sijil-pr-arm-right {
+                            right: 0;
+                            border-top-left-radius: 4mm;
+                            border-bottom-left-radius: 4mm;
+                        }
+
+                        /* ==================================================
+                           BODY
+                           ================================================== */
+                        .sijil-pr-content {
+                            position: absolute;
+                            z-index: 4;
+                            top: 85mm;
+                            left: 10mm;
+                            width: 190mm;
+                            bottom: 50mm;
+                            box-sizing: border-box;
+                        }
+
+                        .sijil-pr-info {
+                            width: 100%;
+                            margin: 0 0 6mm 0;
+                        }
+
+                        .sijil-pr-info-row {
+                            display: table;
+                            table-layout: fixed;
+                            width: 100%;
+                            margin-bottom: 4.2mm;
+                        }
+
+                        .sijil-pr-info-en,
+                        .sijil-pr-info-val,
+                        .sijil-pr-info-ar {
+                            display: table-cell;
+                            vertical-align: bottom;
+                        }
+
+                        .sijil-pr-info-en {
+                            width: 27mm;
+                            direction: ltr;
+                            text-align: left;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                            font-size: 9.4pt;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-info-ar {
+                            width: 31mm;
+                            direction: rtl;
+                            text-align: right;
+                            unicode-bidi: plaintext;
+                            font-size: 9.8pt;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-info-val {
+                            text-align: center;
+                            border-bottom: 0.28mm dashed #788391;
+                            padding: 0 3mm 1.1mm 3mm;
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            font-size: 9.6pt;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+
+                        .sijil-pr-table {
+                            width: 100%;
+                            table-layout: fixed;
+                            border-collapse: separate;
+                            border-spacing: 0;
+                            direction: rtl;
+                            margin: 0;
+                            font-family: "GE SS Two", Tahoma, Arial, sans-serif !important;
+                        }
+
+                        .sijil-pr-table th {
+                            height: 11mm;
+                            padding: 1.3mm 2mm;
+                            box-sizing: border-box;
+                            background: #135d9f !important;
+                            color: #ffffff !important;
+                            text-align: center;
+                            vertical-align: middle;
+                            font-size: 8.7pt;
+                            font-weight: normal;
+                            line-height: 1.08;
+                            border: 0;
+                        }
+
+                        .sijil-pr-table th:first-child {
+                            border-top-right-radius: 0.9mm;
+                        }
+
+                        .sijil-pr-table th:last-child {
+                            border-top-left-radius: 0.9mm;
+                        }
+
+                        .sijil-pr-table td {
+                            height: 10.5mm;
+                            max-height: 10.5mm;
+                            padding: 1.2mm 2mm;
+                            box-sizing: border-box;
+                            background: rgba(216, 228, 239, 0.60) !important;
+                            border-top: 1.25mm solid rgba(255,255,255,0.92);
+                            text-align: center;
+                            vertical-align: middle;
+                            font-size: 8.7pt;
+                            line-height: 1.17;
+                            overflow: hidden;
+                        }
+
+                        .sijil-pr-desc {
+                            width: 57%;
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            word-wrap: break-word;
+                            overflow-wrap: break-word;
+                        }
+
+                        .sijil-pr-batch {
+                            width: 16%;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-line-total {
+                            width: 27%;
+                            direction: ltr;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-continuation {
+                            position: absolute;
+                            right: 1mm;
+                            top: -5mm;
+                            font-size: 7.5pt;
+                            color: #7b8086;
+                            direction: rtl;
+                        }
+
+                        /* Final-page totals sit after the seven-row table, but
+                           remain within the body area reserved above footer. */
+                        .sijil-pr-final {
+                            margin-top: 5mm;
+                            width: 100%;
+                        }
+
+                        .sijil-pr-totals {
+                            width: 86%;
+                            margin: 0 auto;
+                            border-collapse: separate;
+                            border-spacing: 0 2.1mm;
+                            table-layout: fixed;
+                        }
+
+                        .sijil-pr-totals td {
+                            height: 10.2mm;
+                            padding: 0 3mm;
+                            box-sizing: border-box;
+                            vertical-align: middle;
+                            font-size: 10.2pt;
+                        }
+
+                        .sijil-pr-total-value {
+                            width: 46%;
+                            background: rgba(216, 228, 239, 0.91) !important;
+                            text-align: center;
+                            direction: ltr;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-total-label {
+                            width: 54%;
+                            background: #135d9f !important;
+                            color: #ffffff !important;
+                            text-align: center;
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .sijil-pr-bank {
+                            margin-top: 4mm;
+                            text-align: center;
+                            font-size: 7.6pt;
+                            line-height: 1.35;
+                        }
+
+                        .sijil-pr-bank-ar,
+                        .sijil-pr-bk-bank-ar {
+                            margin-bottom: 1.1mm;
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-bank-en,
+                        .sijil-pr-bk-bank-en {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-disclaimer {
+                            margin-top: 3.5mm;
+                            text-align: center;
+                            font-size: 8pt;
+                            line-height: 1.35;
+                        }
+
+                        .sijil-pr-disclaimer-ar {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            margin-bottom: 1.1mm;
+                        }
+
+                        .sijil-pr-disclaimer-en {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        /* ==================================================
+                           FOOTER — always in the same location
+                           ================================================== */
+                        .sijil-pr-footer {
+                            position: absolute;
+                            z-index: 5;
+                            left: 0;
+                            bottom: 0;
+                            width: 210mm;
+                            height: 40mm;
+                            color: #777e85;
+                            overflow: hidden;
+                        }
+
+                        .sijil-pr-footer-circle {
+                            position: absolute;
+                            right: -36mm;
+                            bottom: -9mm;
+                            width: 45mm;
+                            height: 48mm;
+                            border-radius: 20%;
+                            background: #135d9f;
+                        }
+
+                        .sijil-pr-footer-contact {
+                            position: absolute;
+                            right: 14mm;
+                            top: 8.5mm;
+                            width: 62mm;
+                            direction: ltr;
+                            text-align: right;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                            font-size: 7.9pt;
+                        }
+
+                        .sijil-pr-footer-contact-row {
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-footer-contact-row .svg {
+                            display: inline-block;
+                            width: 5.5mm;
+                            margin-left: 1.2mm;
+                            text-align: center;
+                            color: #4e5964;
+                            font-size: 10.5pt;
+                        }
+
+                        .sijil-pr-footer-address {
+                            position: absolute;
+                            right: 13.5mm;
+                            left: 19mm;
+                            top: 23mm;
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            text-align: right;
+                            white-space: nowrap;
+                            color: #7b8187;
+                            font-size: 7.1pt;
+                            line-height: 1.3;
+                        }
+
+                        .sijil-pr-footer-legal {
+                            position: absolute;
+                            right: 15mm;
+                            left: 19mm;
+                            top: 28mm;
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                            text-align: right;
+                            white-space: nowrap;
+                            color: #888d92;
+                            font-size: 6.7pt;
+                            line-height: 1.3;
+                        }
+
+                        .sijil-pr-footer-icon {
+                            display: inline-block;
+                            width: 4.2mm;
+                            height: 4.2mm;
+                            margin-left: 1.5mm;
+                            vertical-align: middle;
+                            fill: #4f5a66;
+                            color: #4f5a66;
+                        }
+
+                        .sijil-pr-footer-icon path {
+                            fill: #4f5a66 !important;
+                        }
+
+                        .sijil-pr-footer-location-icon {
+                            display: inline-block;
+                            width: 4.6mm;
+                            height: 4.0mm;
+                            margin-left: 1.6mm;
+                            vertical-align: middle;
+                            fill: #4f5a66;
+                            color: #4f5a66;
+                        }
+
+                        .sijil-pr-footer-location-icon path {
+                            fill: #4f5a66 !important;
+                        }
+
+                        .icon-saudi_riyal {
+                            font-size: 20px;
+                        }
+
+                        /* Client-language layout */
+                        .report-ar .sijil-pr-table {
+                            direction: rtl !important;
+                        }
+
+                        .report-en .sijil-pr-table {
+                            direction: ltr !important;
+                        }
+
+                        .report-en .sijil-pr-table th,
+                        .report-en .sijil-pr-table td {
+                            direction: ltr !important;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-desc {
+                            direction: ltr !important;
+                            unicode-bidi: plaintext !important;
+                        }
+
+                        .report-en .sijil-pr-batch,
+                        .report-en .sijil-pr-line-total {
+                            direction: ltr !important;
+                            text-align: center !important;
+                        }
+
+                        .report-ar .sijil-pr-totals {
+                            direction: rtl !important;
+                        }
+
+                        .report-en .sijil-pr-totals {
+                            direction: ltr !important;
+                        }
+
+                        .report-en .sijil-pr-total-label {
+                            direction: ltr !important;
+                            text-align: center !important;
+                            unicode-bidi: plaintext !important;
+                        }
+
+                        .report-en .sijil-pr-total-value {
+                            direction: ltr !important;
+                            text-align: center !important;
+                        }
+
+                        .sijil-pr-info-row {
+                            direction: ltr !important;
+                        }
+
+                        /* English customer: force dates/numbers to Western 0-9
+                           without changing any report layout or content. */
+                        .sijil-pr-en-number {
+                            font-family: Arial, Tahoma, sans-serif !important;
+                            direction: ltr !important;
+                            unicode-bidi: bidi-override !important;
+                            font-variant-numeric: lining-nums tabular-nums;
+                        }
+
+                    
+                        /* ==================================================
+                           NEW LANGUAGE-AWARE BODY
+                           ================================================== */
+                        .sijil-pr-content {
+                            top: 77mm !important;
+                            left: 22mm !important;
+                            width: 166mm !important;
+                            bottom: 48mm !important;
+                        }
+
+                        .sijil-pr-client-bar {
+                            width: 100%;
+                            min-height: 8mm;
+                            box-sizing: border-box;
+                            padding: 1.4mm 4mm;
+                            background: #135d9f !important;
+                            color: #ffffff !important;
+                            text-align: center;
+                            font-size: 10.3pt;
+                            line-height: 1.3;
+                            border-radius: 0.6mm;
+                            margin-bottom: 3.3mm;
+                        }
+
+                        .report-ar .sijil-pr-client-bar {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-client-bar {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-meta {
+                            width: 100%;
+                            border-collapse: separate;
+                            border-spacing: 0;
+                            table-layout: fixed;
+                            margin-bottom: 4.8mm;
+                            direction: ltr !important;
+                        }
+
+                        .sijil-pr-meta td {
+                            width: 50%;
+                            padding: 1.3mm 3.5mm;
+                            vertical-align: middle;
+                            background: transparent !important;
+                            border: 0 !important;
+                            font-size: 8.4pt;
+                            line-height: 1.25;
+                        }
+
+                        .sijil-pr-meta-left {
+                            text-align: left;
+                        }
+
+                        .sijil-pr-meta-right {
+                            text-align: right;
+                        }
+
+                        .report-ar .sijil-pr-meta td {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-meta td {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-meta-label {
+                            font-weight: normal;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-meta-value {
+                            margin-inline-start: 2mm;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-local-table {
+                            width: 100%;
+                            table-layout: fixed;
+                            border-collapse: separate;
+                            border-spacing: 0;
+                            margin: 0;
+                        }
+
+                        .report-ar .sijil-pr-local-table {
+                            direction: rtl !important;
+                        }
+
+                        .report-en .sijil-pr-local-table {
+                            direction: ltr !important;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-local-table th {
+                            height: 8.7mm;
+                            padding: 1.2mm 2mm;
+                            background: #135d9f !important;
+                            color: #ffffff !important;
+                            text-align: center;
+                            vertical-align: middle;
+                            border: 0;
+                            font-size: 8.8pt;
+                            font-weight: normal;
+                            line-height: 1.15;
+                        }
+
+                        .sijil-pr-local-table td {
+                            height: 8.6mm;
+                            max-height: 8.6mm;
+                            padding: 1.15mm 2mm;
+                            background: rgba(216, 228, 239, 0.72) !important;
+                            border-top: 1.0mm solid rgba(255,255,255,0.95);
+                            text-align: center;
+                            vertical-align: middle;
+                            font-size: 8.5pt;
+                            line-height: 1.15;
+                            overflow: hidden;
+                        }
+
+                        .sijil-pr-local-desc {
+                            width: 54%;
+                        }
+
+                        .sijil-pr-local-batch {
+                            width: 20%;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-local-amount {
+                            width: 26%;
+                            white-space: nowrap;
+                            direction: ltr !important;
+                        }
+
+                        .report-ar .sijil-pr-local-desc {
+                            direction: rtl !important;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-local-desc {
+                            direction: ltr !important;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .sijil-pr-final-local {
+                            margin-top: 2.5mm;
+                            width: 100%;
+                            margin-bottom: 0;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+
+                        .sijil-pr-summary-table,
+                        .sijil-pr-bank-table {
+                            width: 100%;
+                            table-layout: fixed;
+                            border-collapse: separate;
+                            border-spacing: 0 1.1mm;
+                            margin-top: 0;
+                            margin-bottom: 0;
+                        }
+
+                        .sijil-pr-bank-table {
+                            margin-top: 1.5mm;
+                        }
+
+                        .report-ar .sijil-pr-summary-table,
+                        .report-ar .sijil-pr-bank-table {
+                            direction: rtl !important;
+                        }
+
+                        .report-en .sijil-pr-summary-table,
+                        .report-en .sijil-pr-bank-table {
+                            direction: ltr !important;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-summary-label,
+                        .sijil-pr-bank-label {
+                            width: 52%;
+                            height: 7.0mm;
+                            box-sizing: border-box;
+                            padding: 0.7mm 3mm;
+                            background: #135d9f !important;
+                            color: #ffffff !important;
+                            text-align: center;
+                            vertical-align: middle;
+                            font-size: 8.8pt;
+                            font-weight: normal;
+                        }
+
+                        .sijil-pr-summary-value,
+                        .sijil-pr-bank-value {
+                            width: 48%;
+                            height: 7.0mm;
+                            box-sizing: border-box;
+                            padding: 0.7mm 3mm;
+                            background: rgba(216, 228, 239, 0.72) !important;
+                            color: #202936 !important;
+                            text-align: center;
+                            vertical-align: middle;
+                            font-size: 9pt;
+                        }
+
+                        .sijil-pr-summary-value {
+                            direction: ltr !important;
+                            white-space: nowrap;
+                        }
+
+                        .sijil-pr-transfer-heading {
+                            margin: 2.5mm 0 1.5mm 0;
+                            text-align: center;
+                            font-size: 10pt;
+                            line-height: 1.3;
+                        }
+
+                        .sijil-pr-transfer-dot {
+                            display: inline-block;
+                            margin: 0 3mm;
+                            color: #135d9f;
+                            font-size: 14pt;
+                            vertical-align: middle;
+                        }
+
+                        .report-ar .sijil-pr-transfer-heading {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-transfer-heading {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-bank-value {
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+
+                        .report-ar .sijil-pr-bank-value {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-bank-value {
+                            direction: ltr;
+                        }
+
+                        .sijil-pr-snb-name {
+                            color: #006c4c !important;
+                            font-weight: bold;
+                            font-size: 11pt;
+                        }
+
+                        .sijil-pr-bank-logo {
+                            display: inline-block;
+                            width: 34mm;
+                            max-height: 10mm;
+                            object-fit: contain;
+                            vertical-align: middle;
+                        }
+
+                        .sijil-pr-bank-logo-wrap {
+                            display: inline-block;
+                            background: #ffffff !important;
+                            <!-- padding: 1.2mm 2.6mm; -->
+                            border-radius: 0.6mm;
+                            line-height: 0;
+                        }
+
+                        .sijil-pr-bank-value.sijil-pr-bank-value-logo {
+                            background: #ffffff !important;
+                        }
+
+                        .sijil-pr-transfer-note {
+                            margin-top: 1.2mm;
+                            padding: 1.2mm 3mm;
+                            background: rgba(232, 238, 244, 0.88) !important;
+                            text-align: center;
+                            font-size: 8.6pt;
+                            line-height: 1.3;
+                        }
+
+                        .report-ar .sijil-pr-transfer-note {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-transfer-note {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                        .sijil-pr-disclaimer-local {
+                            margin-top: 4mm;
+                            margin-bottom: 0;
+                            text-align: center;
+                            font-size: 8.2pt;
+                            line-height: 1.3;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+
+                        .report-ar .sijil-pr-disclaimer-local {
+                            direction: rtl;
+                            unicode-bidi: plaintext;
+                        }
+
+                        .report-en .sijil-pr-disclaimer-local {
+                            direction: ltr;
+                            font-family: Arial, Tahoma, sans-serif !important;
+                        }
+
+                    </style>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@emran-alhaddad/saudi-riyal-font/index.css"/>
+                    <t t-foreach="range(page_count)" t-as="page_index">
+                        <t t-set="is_last_page" t-value="page_index == page_count - 1"/>
+
+                        <t t-if="is_last_page">
+                            <t t-set="page_start" t-value="remaining_before_final"/>
+                            <t t-set="page_lines" t-value="report_lines[page_start:]"/>
+                        </t>
+                        <t t-else="">
+                            <t t-set="base_nonfinal_size" t-value="remaining_before_final // nonfinal_page_count"/>
+                            <t t-set="extra_nonfinal_lines" t-value="remaining_before_final % nonfinal_page_count"/>
+                            <t t-set="page_size" t-value="base_nonfinal_size + (1 if page_index &lt; extra_nonfinal_lines else 0)"/>
+                            <t t-set="page_start"
+                               t-value="page_index * base_nonfinal_size + (page_index if page_index &lt; extra_nonfinal_lines else extra_nonfinal_lines)"/>
+                            <t t-set="page_lines" t-value="report_lines[page_start:page_start + page_size]"/>
+                        </t>
+
+                        <div t-attf-class="page sijil-pr-sheet #{'sijil-pr-last-page' if is_last_page else ''} #{'report-en' if is_english else 'report-ar'}" t-att-dir="report_dir">
+                            <img class="sijil-pr-bg" t-attf-src="data:#{pr_back_mime};base64,#{pr_back_b64}" alt=""/>
+
+                            <!-- Header -->
+                            <div class="sijil-pr-topbar"/>
+                            <img class="sijil-pr-logo" t-attf-src="data:#{pr_logo_mime};base64,#{pr_logo_b64}" alt="Logo"/>
+                            <div class="sijil-pr-header-line"/>
+                            <div class="sijil-pr-title">
+                                <t t-if="is_english">
+                                    <div class="sijil-pr-title-en">Payment Request</div>
+                                </t>
+                                <t t-else="">
+                                    <div class="sijil-pr-title-ar">طلب سداد</div>
+                                </t>
+                            </div>
+                            <div class="sijil-pr-arm-left"/>
+                            <div class="sijil-pr-arm-right"/>
+
+                            <!-- Body -->
+                            <div class="sijil-pr-content">
+
+                                <!-- Client name -->
+                                <div class="sijil-pr-client-bar">
+                                    <t t-if="is_english">
+                                        <span>Client Name:&#160;</span>
+                                        <strong t-esc="o.partner_id.display_name or ''"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span>اسم العميل :&#160;</span>
+                                        <strong t-esc="o.partner_id.display_name or ''"/>
+                                    </t>
+                                </div>
+
+                                <!-- Request metadata -->
+                                <table class="sijil-pr-meta">
+                                    <tr>
+                                        <td class="sijil-pr-meta-left">
+                                            <t t-if="is_english">
+                                                <span class="sijil-pr-meta-label">Payment Request No.:</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="o.name or ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="sijil-pr-meta-label">رقم طلب السداد :</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="o.name or ''"/>
+                                            </t>
+                                        </td>
+                                        <td class="sijil-pr-meta-right">
+                                            <t t-if="is_english">
+                                                <span class="sijil-pr-meta-label">Issue Date:</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="context_timestamp(o.create_date).strftime('%Y/%m/%d') if o.create_date else ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="sijil-pr-meta-label">التاريخ :</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="context_timestamp(o.create_date).strftime('%Y/%m/%d') if o.create_date else ''"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="sijil-pr-meta-left">
+                                            <t t-if="is_english">
+                                                <span class="sijil-pr-meta-label">Quotation Ref.:</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="o.sale_order_id.client_order_ref or o.sale_order_id.name or ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="sijil-pr-meta-label">مرجع العرض أو خطاب الارتباط :</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="o.sale_order_id.client_order_ref or o.sale_order_id.name or ''"/>
+                                            </t>
+                                        </td>
+                                        <td class="sijil-pr-meta-right">
+                                            <t t-if="is_english">
+                                                <span class="sijil-pr-meta-label">Due Date:</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="o.due_date.strftime('%Y/%m/%d') if o.due_date else ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="sijil-pr-meta-label">تاريخ الاستحقاق :</span>
+                                                <span class="sijil-pr-meta-value sijil-pr-en-number" t-esc="o.due_date.strftime('%Y/%m/%d') if o.due_date else ''"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <!-- Product lines -->
+                                <table class="sijil-pr-local-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="sijil-pr-local-desc">
+                                                <t t-if="is_english">Description</t>
+                                                <t t-else="">البيان</t>
+                                            </th>
+                                            <th class="sijil-pr-local-batch">
+                                                <t t-if="is_english">Batch</t>
+                                                <t t-else="">الدفعة</t>
+                                            </th>
+                                            <th class="sijil-pr-local-amount">
+                                                <t t-if="is_english">Amount Before VAT</t>
+                                                <t t-else="">المبلغ قبل الضريبة</t>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="page_lines" t-as="line">
+                                            <t t-set="sale_line" t-value="line.sale_order_line_id"/>
+                                            <t t-set="quotation_qty" t-value="sale_line.product_uom_qty if sale_line else 0.0"/>
+                                            <t t-set="line_untaxed" t-value="(sale_line.price_subtotal * line.product_uom_qty / quotation_qty) if sale_line and quotation_qty else 0.0"/>
+
+                                            <td class="sijil-pr-local-desc">
+                                                <span t-esc="line.product_id.with_context(lang=report_lang).display_name if line.product_id else (sale_line.with_context(lang=report_lang).name if sale_line else '')"/>
+                                            </td>
+                                            <td class="sijil-pr-local-batch">
+                                                <span t-att-class="'sijil-pr-en-number' if is_english else ' sijil-pr-en-number '" t-esc="o.quotation_request_number or ''"/>
+                                            </td>
+                                            <td class="sijil-pr-local-amount">
+                                                <span class="icon-saudi_riyal"/>
+                                                <span t-att-class="'sijil-pr-en-number' if is_english else ' sijil-pr-en-number '" t-esc="'{:,.2f}'.format(line_untaxed or 0.0)"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <t t-if="is_last_page">
+                                    <div class="sijil-pr-final-local">
+
+                                        <!-- Totals -->
+                                        <table class="sijil-pr-summary-table">
+                                            <tr>
+                                                <td class="sijil-pr-summary-label">
+                                                    <t t-if="is_english">Subtotal Before VAT</t>
+                                                    <t t-else="">الإجمالي قبل الضريبة</t>
+                                                </td>
+                                                <td class="sijil-pr-summary-value">
+                                                    <span class="icon-saudi_riyal"/>
+                                                    <span t-att-class="'sijil-pr-en-number' if is_english else ' sijil-pr-en-number '" t-esc="'{:,.2f}'.format(o.report_untaxed_amount or 0.0)"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="sijil-pr-summary-label">
+                                                    <t t-if="is_english">VAT (15%)</t>
+                                                    <t t-else="" >ضريبة القيمة المضافة 
+                                                    <span class="sijil-pr-en-number">
+                                                    (%15)
+                                                    </span>
+                                                    </t>
+                                                </td>
+                                                <td class="sijil-pr-summary-value">
+                                                    <span class="icon-saudi_riyal"/>
+                                                    <span t-att-class="'sijil-pr-en-number' if is_english else ' sijil-pr-en-number '" t-esc="'{:,.2f}'.format(o.report_tax_amount or 0.0)"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="sijil-pr-summary-label">
+                                                    <t t-if="is_english">Total Amount Due</t>
+                                                    <t t-else="">الإجمالي المستحق</t>
+                                                </td>
+                                                <td class="sijil-pr-summary-value">
+                                                    <span class="icon-saudi_riyal"/>
+                                                    <span t-att-class="'sijil-pr-en-number' if is_english else ' sijil-pr-en-number '" t-esc="'{:,.2f}'.format((o.report_untaxed_amount or 0.0) + (o.report_tax_amount or 0.0))"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Transfer heading -->
+                                        <div class="sijil-pr-transfer-heading">
+                                            <span class="sijil-pr-transfer-dot">•</span>
+                                            <t t-if="is_english">
+                                                Please transfer the amount due to the following bank account:
+                                            </t>
+                                            <t t-else="">
+                                                يتم التحويل على الحساب البنكي الآتي
+                                            </t>
+                                            <span class="sijil-pr-transfer-dot">•</span>
+                                        </div>
+
+                                        <!-- Bank details -->
+                                        <table class="sijil-pr-bank-table">
+                                            <tr>
+                                                <td class="sijil-pr-bank-label">
+                                                    <t t-if="is_english">Beneficiary Name</t>
+                                                    <t t-else="">المستفيد</t>
+                                                </td>
+                                                <td class="sijil-pr-bank-value">
+                                                    <t t-if="is_english">
+                                                        Mohammed Abdulrahman Al-Zamil Company
+                                                    </t>
+                                                    <t t-else="" >
+                                                    <div style="font-size: 10px !important;">
+                                                     شركة محمد عبدالرحمن الزامل محاسبون قانونيون ومستشارون 
+                                                    </div>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="sijil-pr-bank-label">
+                                                    <t t-if="is_english">Bank</t>
+                                                    <t t-else="">البنك</t>
+                                                </td>
+                                                <td class="sijil-pr-bank-value sijil-pr-bank-value-logo">
+                                                    <span class="sijil-pr-bank-logo-wrap">
+                                                        <t t-if="is_bookkeeping">
+                                                            <img class="sijil-pr-bank-logo" t-attf-src="data:#{bn_el_logo_mime};base64,#{bn_el_logo_b64}" alt="Alinma Bank"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <img class="sijil-pr-bank-logo" t-attf-src="data:#{bn_logo_mime};base64,#{bn_logo_b64}" alt="SNB"/>
+                                                        </t>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="sijil-pr-bank-label">IBAN</td>
+                                                <td class="sijil-pr-bank-value" style="direction:ltr; unicode-bidi:plaintext;">
+                                                    <span class="sijil-pr-en-number" t-esc="bank_iban"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <div class="sijil-pr-transfer-note">
+                                            <t t-if="is_english">
+                                                Please include the Payment Request No. in the bank transfer reference.
+                                            </t>
+                                            <t t-else="">
+                                                يرجى ذكر رقم طلب السداد في وصف الحوالة.
+                                            </t>
+                                        </div>
+                                        
+
+                                        <div class="sijil-pr-disclaimer-local">
+                                            <t t-if="is_english">
+                                                <div>This document is not an invoice.</div>
+                                                <div>The electronic invoice is issued after payment.</div>
+                                            </t>
+                                            <t t-else="">
+                                                <div>لا يعد هذا المستند فاتورة.</div>
+                                                <div>يتم إصدار الفاتورة الإلكترونية بعد السداد.</div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Footer -->
+
+                            <div class="sijil-pr-footer">
+                                <div class="sijil-pr-footer-circle"/>
+                                <div class="sijil-pr-footer-contact">
+                                    <div class="sijil-pr-footer-contact-row">
+                                        <span>9200 11 579</span>
+                                        <svg class="sijil-pr-footer-icon"
+                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                            <path d="M415.8 89C423.6 70.2 444.2 60.1 463.9 65.5L469.4 67C534 84.6 589.2 147.2 573.1 223.4C536 398.4 398.3 536.1 223.3 573.2C147 589.4 84.5 534.1 66.9 469.5L65.4 464C60 444.3 70.1 423.7 88.9 415.9L186.2 375.4C202.7 368.5 221.8 373.3 233.2 387.2L271.8 434.4C342.1 399.5 398.6 341.1 431.1 269.5L387 233.4C373.1 222.1 368.4 203 375.2 186.4L415.8 89z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="sijil-pr-footer-contact-row">
+                                        <span>Info@zofirm.com</span>
+                                        <svg class="sijil-pr-footer-icon"
+                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                            <path d="M112 128C85.5 128 64 149.5 64 176C64 191.1 71.1 205.3 83.2 214.4L291.2 370.4C308.3 383.2 331.7 383.2 348.8 370.4L556.8 214.4C568.9 205.3 576 191.1 576 176C576 149.5 554.5 128 528 128L112 128zM64 260L64 448C64 483.3 92.7 512 128 512L512 512C547.3 512 576 483.3 576 448L576 260L377.6 408.8C343.5 434.4 296.5 434.4 262.4 408.8L64 260z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="sijil-pr-footer-contact-row">
+                                        <span>www.zofirm.com</span>
+                                        <svg class="sijil-pr-footer-icon"
+                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                            <path d="M351.9 280l-190.9 0c2.9 64.5 17.2 123.9 37.5 167.4 11.4 24.5 23.7 41.8 35.1 52.4 11.2 10.5 18.9 12.2 22.9 12.2s11.7-1.7 22.9-12.2c11.4-10.6 23.7-28 35.1-52.4 20.3-43.5 34.6-102.9 37.5-167.4zM160.9 232l190.9 0C349 167.5 334.7 108.1 314.4 64.6 303 40.2 290.7 22.8 279.3 12.2 268.1 1.7 260.4 0 256.4 0s-11.7 1.7-22.9 12.2c-11.4 10.6-23.7 28-35.1 52.4-20.3 43.5-34.6 102.9-37.5 167.4zm-48 0C116.4 146.4 138.5 66.9 170.8 14.7 78.7 47.3 10.9 131.2 1.5 232l111.4 0zM1.5 280c9.4 100.8 77.2 184.7 169.3 217.3-32.3-52.2-54.4-131.7-57.9-217.3L1.5 280zm398.4 0c-3.5 85.6-25.6 165.1-57.9 217.3 92.1-32.7 159.9-116.5 169.3-217.3l-111.4 0zm111.4-48C501.9 131.2 434.1 47.3 342 14.7 374.3 66.9 396.4 146.4 399.9 232l111.4 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="sijil-pr-footer-address">
+                                    <svg class="sijil-pr-footer-location-icon"
+                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                                        <path d="M0 188.6C0 84.4 86 0 192 0S384 84.4 384 188.6c0 119.3-120.2 262.3-170.4 316.8-11.8 12.8-31.5 12.8-43.3 0-50.2-54.5-170.4-197.5-170.4-316.8zM192 256a64 64 0 1 0 0-128 64 64 0 1 0 0 128z"/>
+                                    </svg>
+                                    طريق الدائري الشمالي، مخرج 6 مبنى سكوير 6 الدور الثاني مكتب رقم 179، الرياض 13313
+                                </div>
+                                <div class="sijil-pr-footer-legal">
+                                شركة محمد عبدالرحمن الزامل محاسبون قانونيون ومستشارون شركة مهنية ذات مسؤولية محدودة الرقم الموحد : 70175032156 برأس مال وقدره 120,000 ريال سعودي .
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+    <!-- Native Odoo Print dropdown: ZOFIRM -->
+    <record id="action_report_payment_request_snb_list" model="ir.actions.report">
+        <field name="name">Print SNB</field>
+        <field name="model">sale.payment.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">Sijil_payment_request.report_payment_request_snb_list</field>
+        <field name="report_file">Sijil_payment_request.report_payment_request_snb_list</field>
+        <field name="paperformat_id" ref="paperformat_payment_request"/>
+        <field name="binding_model_id" ref="model_sale_payment_request"/>
+        <field name="binding_type">report</field>
+        <field name="binding_view_types">list</field>
+        <field name="print_report_name">'Payment Request SNB'</field>
+    </record>
+
+    <record id="action_report_payment_request_alinma_list" model="ir.actions.report">
+        <field name="name">Print Alinma</field>
+        <field name="model">sale.payment.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">Sijil_payment_request.report_payment_request_alinma_list</field>
+        <field name="report_file">Sijil_payment_request.report_payment_request_alinma_list</field>
+        <field name="paperformat_id" ref="paperformat_payment_request"/>
+        <field name="binding_model_id" ref="model_sale_payment_request"/>
+        <field name="binding_type">report</field>
+        <field name="binding_view_types">list</field>
+        <field name="print_report_name">'Payment Request Alinma'</field>
+    </record>
+
+    <template id="report_payment_request_snb_list" name="Payment Request - SNB">
+        <t t-set="docs" t-value="docs.with_context(payment_request_print_type='audit')"/>
+        <t t-call="Sijil_payment_request.report_payment_request_document"/>
+    </template>
+
+    <template id="report_payment_request_alinma_list" name="Payment Request - Alinma">
+        <t t-set="docs" t-value="docs.with_context(payment_request_print_type='bookkeeping')"/>
+        <t t-call="Sijil_payment_request.report_payment_request_document"/>
+    </template>
+
+</odoo>
